@@ -2,8 +2,14 @@
 %
 % rules
 
+% reflexivity
 sub(?X, ?X) :- concept(?X).
 sub(?X, ?X) :- role(?X).
+
+% negated
+negOf(?X, ?Y) :- negOf(?Y, ?X).
+sub(?Y1, ?X1) :- sub(?X, ?Y), negOf(?X, ?X1), negOf(?Y, ?Y1).
+
 
 % transitivity
 sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z), concept(?X), concept(?Y), concept(?Z).
