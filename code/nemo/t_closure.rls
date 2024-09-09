@@ -1,0 +1,75 @@
+@prefix nf: <http://rulewerk.semantic-web.org/normalForm/> .
+@prefix inf: <http://rulewerk.semantic-web.org/inferred/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sct: <http://www.ihtsdo.org/owlname#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator.ttl"} .
+
+% To construct
+% concept(A), concept(notA), neg_of(A, notA).
+% concept(existsP), concept(notExistsP), neg_of(existsP, notExistsP),
+% role(P), role(notP), neg_of(P, notP),
+% concept(existsPMinus), concept(notExistsPMinus),
+% neg_of(existsPMinus, notExistsPMinus),
+% role(PMinus), role(notPMinus), neg_of(PMinus, notPMinus),
+% inv_of(PMinus, P), inv_of(notPMinus, notP),
+% dom_of(existsP, P), rng_of(existsPMinus, P),
+% dom_of(existsPMinus, PMinus), rng_of(existsP, PMinus).
+
+
+% To support
+% A, notA
+% P existsP notExistsP
+% PMinus existsPMinus notExistsPMinus
+
+% Reading data
+
+% dnh: Funct does not affect cl(T), so I don't have support it?
+role(?X), concept(?Y), concept(?Z), domOf(?Y, ?X), rngOf(?Z, ?X) :- TRIPLE(?X, rdf:type, owl:ObjectProperty), TRIPLE(?X, rdfs:domain, ?Y), TRIPLE(?X, rdfs:range, ?Z).
+
+% exists
+% This also matches blank nodes, WHAT ABOUT rng?
+exists(?P), concept(?P), domOf(?X, ?P), rngOf(?X, !Q) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P) .
+
+% subsumption
+concept(?X), concept(?Y), sub(?X,?Y) :- TRIPLE(?X, rdfs:subClassOf, ?Y) .
+
+% equivalence
+concept(?X), concept(?Y), sub(?X,?Y), sub(?Y,?X) :- TRIPLE(?X, owl:equivalentClass, ?Y).
+
+% disjointness; HOW TO DEAL WITH BLANKNODES?
+concept(?X), concept(?Y), concept(!Z), negOf(?Y, !Z) :- TRIPLE(?X, owl:disjointWith, ?Y) .
+
+% atomic concepts
+atomicConcept(?X) :- concept(?X), ~exists(?X) .
+
+% ====================================================================================================
+
+% Computing cl_T
+
+% reflexivity
+sub(?X, ?X) :- concept(?X).
+sub(?X, ?X) :- role(?X).
+%
+% negated
+negOf(?X, ?Y) :- negOf(?Y, ?X).
+sub(?Y1, ?X1) :- sub(?X, ?Y), negOf(?X, ?X1), negOf(?Y, ?Y1).
+%
+% transitivity
+sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z), concept(?X), concept(?Y), concept(?Z).
+sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z), role(?X), role(?Y), role(?Z).
+%
+% role inclusions
+sub(?X1, ?Y1) :- sub(?X, ?Y), domOf(?X1,?X), domOf(?Y1,?Y).
+sub(?X1, ?Y1) :- sub(?X, ?Y), rngOf(?X1,?X), rngOf(?Y1,?Y).
+%
+% role inverses
+sub(?X1, ?Y1) :- sub(?X, ?Y), invOf(?X1,?X), invOf(?Y1,?Y).
+invOf(?X, ?Y) :- invOf(?Y, ?X), role(?X), role(?Y).
+
+
+% export to standard output
+% @export sub :- turtle{resource=""} .
