@@ -1,0 +1,25 @@
+softwareagent(X) :- codingagent(X).
+nothing(X) :- developer(X), specificationsagent(X).
+nothing(X) :- materialsengineer(X), electronicsagent(X).
+taskagent(X) :- testingagent(X).
+taskagent(X) :- softwareagent(X).
+employee(X) :- taskagent(X).
+employee(X) :- developer(X).
+nothing(X) :- electronicsagent(X), designer(X).
+taskagent(X) :- designagent(X).
+nothing(X) :- informaticengineer(X), electronicengineer(X).
+engineer(X) :- materialsengineer(X).
+designagent(X) :- materialsagent(X).
+employee(X) :- designer(X).
+nothing(X) :- materialsengineer(X), softwareagent(X).
+nothing(X) :- informaticengineer(X), electronicsagent(X).
+nothing(X) :- codingagent(X), electronicengineer(X).
+nothing(X) :- softwareagent(X), designer(X).
+engineer(X) :- electronicengineer(X).
+employee(X) :- engineer(X).
+taskagent(X) :- electronicsagent(X).
+nothing(X) :- fullname(X), employee(X).
+engineer(X) :- informaticengineer(X).
+softwareagent(X) :- specificationsagent(X).
+employee(Y) :- haspersonalinfo(Y,X).
+fullname(Y) :- haspersonalinfo(X,Y).

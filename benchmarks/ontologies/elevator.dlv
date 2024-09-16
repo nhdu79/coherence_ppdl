@@ -1,0 +1,9 @@
+passenger(X) :- served(X).
+floor(X) :- liftat(X).
+nothing(X) :- passenger(X), floor(X).
+passenger(X) :- boarded(X).
+floor(Y) :- origin(X,Y).
+floor(Y) :- destin(X,Y).
+passenger(Y) :- destin(Y,X).
+passenger(Y) :- origin(Y,X).
+ :- next(X,Z), next(X,Y), Y != Z.

@@ -1,0 +1,8 @@
+nothing(X) :- bomb(X), cat(X).
+objectx(X) :- cat(X).
+objectx(X) :- bomb(X).
+package(Y) :- contains(Y,X).
+objectx(Y) :- contains(X,Y).
+ :- contains(X,Z), Y !=Z, contains(X,Y).
+thing(Y) :- contains(X,Y), package(X).
+objectx(Y) :- contains(X,Y), package(X).

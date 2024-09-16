@@ -8,47 +8,116 @@
 
 @import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator.ttl"} .
 
-% To construct
-% concept(A), concept(notA), neg_of(A, notA).
-% concept(existsP), concept(notExistsP), neg_of(existsP, notExistsP),
-% role(P), role(notP), neg_of(P, notP),
-% concept(existsPMinus), concept(notExistsPMinus),
-% neg_of(existsPMinus, notExistsPMinus),
-% role(PMinus), role(notPMinus), neg_of(PMinus, notPMinus),
-% inv_of(PMinus, P), inv_of(notPMinus, notP),
-% dom_of(existsP, P), rng_of(existsPMinus, P),
-% dom_of(existsPMinus, PMinus), rng_of(existsP, PMinus).
 
 
-% To support
-% A, notA
-% P existsP notExistsP
-% PMinus existsPMinus notExistsPMinus
+%% ====================================================================================================
+%% =================================== Build data from triples ========================================
+%% ====================================================================================================
 
-% Reading data
+%% functional property
+% TODO: Introduce domOf and rngOf
+role(?P), funct(?P), normForRole(?P) :- TRIPLE(?P, rdf:type, owl:ObjectProperty), TRIPLE(?P, rdf:type, owl:FunctionalProperty) .
 
-% dnh: Funct does not affect cl(T), so I don't have support it?
-role(?X), concept(?Y), concept(?Z), domOf(?Y, ?X), rngOf(?Z, ?X) :- TRIPLE(?X, rdf:type, owl:ObjectProperty), TRIPLE(?X, rdfs:domain, ?Y), TRIPLE(?X, rdfs:range, ?Z).
 
-% exists
-% This also matches blank nodes, WHAT ABOUT rng?
-exists(?P), concept(?P), domOf(?X, ?P), rngOf(?X, !Q) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P) .
+%% 1.1.) property with dom and rng
+role(?P), concept(?X), concept(?Y),
+  normForNeg(?Y), normForNeg(?P), normForRole(?P), normForNeg(?X) :- TRIPLE(?P, rdf:type, owl:ObjectProperty), TRIPLE(?P, rdfs:domain, ?X), TRIPLE(?P, rdfs:range, ?Y) .
+domOf(?X, ?P), rngOf(?Y, ?P) :- TRIPLE(?P, rdf:type, owl:ObjectProperty), TRIPLE(?P, rdfs:domain, ?X), TRIPLE(?P, rdfs:range, ?Y), invOf(?P, ?Q) .
 
-% subsumption
-concept(?X), concept(?Y), sub(?X,?Y) :- TRIPLE(?X, rdfs:subClassOf, ?Y) .
 
-% equivalence
-concept(?X), concept(?Y), sub(?X,?Y), sub(?Y,?X) :- TRIPLE(?X, owl:equivalentClass, ?Y).
+%% 1.2.) ?X := \existsP
+concept(?X), role(?P),
+  normForNeg(?X), normForRole(?P) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P) .
+domOf(?X, ?P), rngOf(?X, ?Q) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P), invOf(?P, ?Q) .
 
-% disjointness; HOW TO DEAL WITH BLANKNODES?
-concept(?X), concept(?Y), concept(!Z), negOf(?Y, !Z) :- TRIPLE(?X, owl:disjointWith, ?Y) .
 
-% atomic concepts
-atomicConcept(?X) :- concept(?X), ~exists(?X) .
+%% subsumption
+concept(?X), concept(?Y), sub(?X, ?Y),
+  normForNeg(?X), normForNeg(?Y) :- TRIPLE(?X, rdfs:subClassOf, ?Y) .
+% Warning: Case not in benchmarks; domOf needs to be created
+role(?P), role(?Q), sub(?P, ?Q),
+  normForRole(?P), normForRole(?Q), normForNeg(?P), normForNeg(?Q):- TRIPLE(?P, rdfs:subPropertyOf, ?Q) .
 
-% ====================================================================================================
 
-% Computing cl_T
+%% equivalence
+% TODO: Introduce domOf and rngOf
+% Warning: Case not in benchmarks
+concept(?X), concept(?Y), sub(?X, ?Y), sub(?Y, ?X), normForNeg(?X), normForNeg(?Y) :- TRIPLE(?X, owl:equivalentClass, ?Y) .
+% Warning: Case not in benchmarks
+role(?P), role(?Q), sub(?P, ?Q), sub(?Q, ?P), normForRole(?P), normForRole(?Q), normForNeg(?P), normForNeg(?Q) :- TRIPLE(?P, owl:equivalentProperty, ?Q) .
+
+
+%% concept disjoint (Note: can also be merged)
+concept(?X), concept(?Y), normForNeg(?X),
+  normForNeg(?Y) :- TRIPLE(?X, rdf:type, owl:Class), TRIPLE(?X, owl:disjointWith, ?Y) .
+sub(?X, ?Y1) :- TRIPLE(?X, owl:disjointWith, ?Y), negOf(?Y, ?Y1) .
+
+
+%% role disjoint
+% TODO: Introduce domOf and rngOf
+% Warning: Case not in benchmarks
+role(?P), role(?Q), normForNeg(?P),
+  normForNeg(?Q), normForRole(?P), normForRole(?Q) :- TRIPLE(?P, rdf:type, owl:ObjectProperty), TRIPLE(?P, owl:propertyDisjointWith, ?Q) .
+sub(?P, ?Q1) :- TRIPLE(?P, owl:propertyDisjointWith, ?Q), negOf(?P, ?Q1) .
+
+
+%% additional rules for connecting conceptes and roles
+% concept negation
+concept(!notX), negOf(!notX, ?X) :- concept(?X), normForNeg(?X) .
+% role negation
+role(!notP), negOf(!notP, ?P):- role(?P), normForRole(?P) .
+% role inverse
+role(!Q), invOf(!Q, ?P) :- role(?P), normForRole(?P) .
+% atomic
+atomic(?X) :- concept(?X), ~domOf(?X, ?P), ~rngOf(?X, ?Q) .
+
+
+
+%% ====================================================================================================
+%% ================================= Identifying type of inclusions ===================================
+%% ====================================================================================================
+
+%% Norm defines NORMAL direction due to symmetry (normForNeg for both role and concept)
+
+%% Positive inclusions
+% atomicA in atomicB
+aAInaBSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), atomic(?Y), normForNeg(?X), normForNeg(?Y) .
+% existsP in atomicB`
+ePInaBSub(?X, ?Y) :- sub(?X, ?Y), domOf(?X, ?P) , atomic(?Y), normForNeg(?X), normForNeg(?Y) .
+% existsPMinus in atomic B
+ePMinusaBSub(?X, ?Y) :- sub(?X, ?Y), atomic(?Y), rngOf(?X, ?P), invOf(?P, ?Q), normForNeg(?Q), normForNeg(?Y) .
+% r in p
+rInPSub(?X, ?Y) :- sub(?X, ?Y), role(?X), role(?Y), normForRole(?X), normForRole(?Y) .
+% r in PMinus
+rInPMinusSub(?X, ?Y) :- sub(?X, ?Y), role(?X), role(?Y), invOf(?Y, ?Y1), normForRole(?X), normForRole(?Y1) .
+% RMinus in P
+rMinusInPSub(?X, ?Y) :- sub(?X, ?Y), role(?X), role(?Y), invOf(?X, ?X1), normForRole(?X1), normForRole(?Y) .
+
+
+%% Negative inclusions
+% atomicA in not atomicB
+aAInNotaBSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), negOf(?Y, ?Y1), atomic(?Y1), normForNeg(?X), normForNeg(?Y1) .
+% atomicB in not existsP
+aBInNotePSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), negOf(?Y, ?Y1), domOf(?Y1, ?P), normForNeg(?X), normForNeg(?Y1) .
+% existsP in not atomicB
+ePInNotaBSub(?X, ?Y) :- sub(?X, ?Y), domOf(?X, ?P), negOf(?Y, ?Y1), atomic(?Y1), normForNeg(?X), normForNeg(?Y1) .
+% atomicB in not existsPMinus
+aBInNotePMinusSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), normForNeg(?X), negOf(?Y, ?Y1), rngOf(?Y1, ?Q), invOf(?Q, ?P), normForNeg(?P) .
+% existsPMinus in not atomicB
+ePMinusInNotaBSub(?X, ?Y) :- sub(?X, ?Y), rngOf(?X, ?Q), invOf(?Q, ?P), normForNeg(?P), negOf(?Y, ?Y1), atomic(?Y1), normForNeg(?Y1) .
+% r in not p
+rInNotPSub(?X, ?Y) :- sub(?X, ?Y), role(?X), negOf(?Y, ?Y1), role(?Y1), normForRole(?X), normForRole(?Y1) .
+% r in not PMinus
+rInNotPMinusSub(?X, ?Y) :- sub(?X, ?Y), role(?X), normForRole(?X), negOf(?Y, ?Y1), invOf(?Y1, ?Y2), role(?Y2), normForRole(?Y2) .
+
+
+
+%% ====================================================================================================
+%% ===================================== Computing cl(T) ==============================================
+%% ====================================================================================================
+
+% functional
+funct(?P) :- funct(?Q), sub(?P, ?Q).
 
 % reflexivity
 sub(?X, ?X) :- concept(?X).
@@ -59,8 +128,8 @@ negOf(?X, ?Y) :- negOf(?Y, ?X).
 sub(?Y1, ?X1) :- sub(?X, ?Y), negOf(?X, ?X1), negOf(?Y, ?Y1).
 %
 % transitivity
-sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z), concept(?X), concept(?Y), concept(?Z).
-sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z), role(?X), role(?Y), role(?Z).
+sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z).
+sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z).
 %
 % role inclusions
 sub(?X1, ?Y1) :- sub(?X, ?Y), domOf(?X1,?X), domOf(?Y1,?Y).
@@ -68,7 +137,7 @@ sub(?X1, ?Y1) :- sub(?X, ?Y), rngOf(?X1,?X), rngOf(?Y1,?Y).
 %
 % role inverses
 sub(?X1, ?Y1) :- sub(?X, ?Y), invOf(?X1,?X), invOf(?Y1,?Y).
-invOf(?X, ?Y) :- invOf(?Y, ?X), role(?X), role(?Y).
+invOf(?X, ?Y) :- invOf(?Y, ?X).
 
 
 % export to standard output
