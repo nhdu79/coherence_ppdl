@@ -1,4 +1,4 @@
-from hashlib import md5
+# from hashlib import md5
 from collections import defaultdict
 
 INCLUSION_TYPES = [

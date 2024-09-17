@@ -10,10 +10,8 @@ class TBox:
         """
         self.inclusions = []
         for incl_type, incl_list in incl_dict.items():
-            for incl in incl_list:
-                left_pred_uri, right_pred_uri = incl[0], incl[1]
-                new_incl = Inclusion(left_pred_uri, right_pred_uri, incl_type)
-                self.inclusions.append(new_incl)
+            new_incls = [Inclusion(incl[0], incl[1], incl_type) for incl in incl_list]
+            self.inclusions.extend(new_incls)
 
 
     def get_super_predicates_of(self, pred_repr):
