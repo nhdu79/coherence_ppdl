@@ -1,26 +1,28 @@
-from utils.functions import flatten_list
 from coherence_update.classes.inclusion import Inclusion
+from collections import defaultdict
+from utils.functions import get_repr
 
 class TBox:
-    def __init__(self, incl_dict):
+    def __init__(self, inclusions, roles=None, a_concepts=None):
         """
-            :param incl_dict: dictionary of inclusions
-                :key: inclusion_type
-                :value: list of inclusions
+            :param inclusions: dict of inclusions
+                key: inclusion type
+                value: list of inclusions
+            :param roles: list of roles
+            :param a_concepts: list of atomic concepts
         """
-        self.inclusions = []
-        for incl_type, incl_list in incl_dict.items():
-            new_incls = [Inclusion(incl[0], incl[1], incl_type) for incl in incl_list]
-            self.inclusions.extend(new_incls)
+        self.roles = roles
+        self.a_concepts = a_concepts
+        self.incl_dict = defaultdict(lambda: [])
+        for incl_type, incl_list in inclusions.items():
+            for incl in incl_list:
+                left_uri, right_uri = incl[0], incl[1]
+                left_atomic_uri, right_atomic_uri = incl[2], incl[3]
+                new_incl = Inclusion(incl_type, left_uri, right_uri, left_atomic_uri, right_atomic_uri)
+                self.incl_dict[incl_type].append(new_incl)
 
+    def a_concepts_repr(self):
+        return [get_repr(concept) for concept in self.a_concepts]
 
-    def get_super_predicates_of(self, pred_repr):
-        """
-            :param pred_repr md5 hash of the predicate uri
-        """
-        return Inclusion.left_pred_sup[pred_repr]
-
-
-    def get_super_inv_predicates_of(self, pred_repr):
-        pass
-
+    def roles_repr(self):
+        return [get_repr(role) for role in self.roles]

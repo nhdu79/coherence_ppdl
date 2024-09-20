@@ -10,9 +10,9 @@ def build_del_concept_and_incompatible_rules_for_atomic_concepts(a_concepts):
     """
     rules = []
     for a_concept in a_concepts:
-        r_del = f"del{a_concept}(X) :- del{a_concept}_request(X), {a_concept}(X)."
-        r_inc = f"incompatibleupdate() :- ins{a_concept}request(?X), del{a_concept}request(X)."
-        r.extend([r_del, r_inc])
+        r_del = f"del{a_concept}(X) :- del{a_concept}Request(X), {a_concept}(X)."
+        r_inc = f"incompatibleUpdate() :- ins{a_concept}Request(?X), del{a_concept}Request(X)."
+        rules.extend([r_del, r_inc])
 
     return rules
 
@@ -25,9 +25,9 @@ def build_del_role_and_incompatible_rules_for_roles(roles):
     """
     rules = []
     for role in roles:
-        r_del = f"del{role}(X, Y) :- del{role}request(X, Y), {role}(X, Y)."
-        r_inc = f"incompatibleupdate() :- ins{role}request(X), del{role}request(X)."
-        r.extend([r_del, r_inc])
+        r_del = f"del{role}(X, Y) :- del{role}Request(X, Y), {role}(X, Y)."
+        r_inc = f"incompatibleUpdate() :- ins{role}Request(X), del{role}Request(X)."
+        rules.extend([r_del, r_inc])
 
     return rules
 

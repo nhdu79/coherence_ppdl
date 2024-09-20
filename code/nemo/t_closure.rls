@@ -1,4 +1,5 @@
 @prefix nf: <http://rulewerk.semantic-web.org/normalForm/> .
+
 @prefix inf: <http://rulewerk.semantic-web.org/inferred/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -69,7 +70,7 @@ role(!notP), negOf(!notP, ?P):- role(?P), normForRole(?P) .
 % role inverse
 role(!Q), invOf(!Q, ?P) :- role(?P), normForRole(?P) .
 % atomic
-atomic(?X) :- concept(?X), ~domOf(?X, ?P), ~rngOf(?X, ?Q) .
+atomic(?X) :- concept(?X), ~domOf(?X, ?P), ~rngOf(?X, ?Q),  normForNeg(?X) .
 
 
 
@@ -81,34 +82,34 @@ atomic(?X) :- concept(?X), ~domOf(?X, ?P), ~rngOf(?X, ?Q) .
 
 %% Positive inclusions
 % atomicA in atomicB
-aAInaBSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), atomic(?Y), normForNeg(?X), normForNeg(?Y) .
+aAInaBSub(?A, ?B, ?A, ?B) :- sub(?A, ?B), atomic(?A), atomic(?B), normForNeg(?A), normForNeg(?B) .
 % existsP in atomicB`
-ePInaBSub(?X, ?Y) :- sub(?X, ?Y), domOf(?X, ?P) , atomic(?Y), normForNeg(?X), normForNeg(?Y) .
+ePInaBSub(?ExistsP, ?B, ?P, ?B) :- sub(?ExistsP, ?B), domOf(?ExistsP, ?P) , atomic(?B), normForNeg(?ExistsP), normForNeg(?B) .
 % existsPMinus in atomic B
-ePMinusaBSub(?X, ?Y) :- sub(?X, ?Y), atomic(?Y), rngOf(?X, ?P), invOf(?P, ?Q), normForNeg(?Q), normForNeg(?Y) .
+ePMinusInaBSub(?ExistsPMinus, ?B, ?P, ?B) :- sub(?ExistsPMinus, ?B), atomic(?B), rngOf(?ExistsPMinus, ?P), invOf(?P, ?Q), normForNeg(?Q), normForNeg(?B) .
 % r in p
-rInPSub(?X, ?Y) :- sub(?X, ?Y), role(?X), role(?Y), normForRole(?X), normForRole(?Y) .
+rInPSub(?R, ?P, ?R, ?P) :- sub(?R, ?P), role(?R), role(?P), normForRole(?R), normForRole(?P) .
 % r in PMinus
-rInPMinusSub(?X, ?Y) :- sub(?X, ?Y), role(?X), role(?Y), invOf(?Y, ?Y1), normForRole(?X), normForRole(?Y1) .
+rInPMinusSub(?R, ?PMinus, ?R, ?P) :- sub(?R, ?PMinus), role(?R), role(?PMinus), invOf(?PMinus, ?P), normForRole(?R), normForRole(?P) .
 % RMinus in P
-rMinusInPSub(?X, ?Y) :- sub(?X, ?Y), role(?X), role(?Y), invOf(?X, ?X1), normForRole(?X1), normForRole(?Y) .
+rMinusInPSub(?RMinus, ?P, ?R, ?P) :- sub(?RMinus, ?P), role(?RMinus), role(?P), invOf(?RMinus, ?R), normForRole(?R), normForRole(?P) .
 
 
 %% Negative inclusions
 % atomicA in not atomicB
-aAInNotaBSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), negOf(?Y, ?Y1), atomic(?Y1), normForNeg(?X), normForNeg(?Y1) .
+aAInNotaBSub(?A, ?B, ?A, ?B) :- sub(?A, ?B), atomic(?A), negOf(?B, ?B1), atomic(?B1), normForNeg(?A), normForNeg(?B1) .
 % atomicB in not existsP
-aBInNotePSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), negOf(?Y, ?Y1), domOf(?Y1, ?P), normForNeg(?X), normForNeg(?Y1) .
+aBInNotePSub(?A, ?B, ?A, ?P) :- sub(?A, ?B), atomic(?A), negOf(?B, ?B1), domOf(?B1, ?P), normForNeg(?A), normForNeg(?B1) .
 % existsP in not atomicB
-ePInNotaBSub(?X, ?Y) :- sub(?X, ?Y), domOf(?X, ?P), negOf(?Y, ?Y1), atomic(?Y1), normForNeg(?X), normForNeg(?Y1) .
+ePInNotaBSub(?ExistP, ?NotB, ?P, ?B) :- sub(?ExistP, ?NotB), domOf(?ExistP, ?P), negOf(?NotB, ?B), atomic(?B), normForNeg(?ExistP), normForNeg(?B) .
 % atomicB in not existsPMinus
-aBInNotePMinusSub(?X, ?Y) :- sub(?X, ?Y), atomic(?X), normForNeg(?X), negOf(?Y, ?Y1), rngOf(?Y1, ?Q), invOf(?Q, ?P), normForNeg(?P) .
+aBInNotePMinusSub(?A, ?NotExistsPMinus, ?A, ?P) :- sub(?A, ?NotExistsPMinus), atomic(?A), normForNeg(?A), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P), normForNeg(?P) .
 % existsPMinus in not atomicB
-ePMinusInNotaBSub(?X, ?Y) :- sub(?X, ?Y), rngOf(?X, ?Q), invOf(?Q, ?P), normForNeg(?P), negOf(?Y, ?Y1), atomic(?Y1), normForNeg(?Y1) .
+ePMinusInNotaBSub(?ExistsPMinus, ?NotB, ?P, ?B) :- sub(?ExistsPMinus, ?NotB), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P), normForNeg(?P), negOf(?NotB, ?B), atomic(?B), normForNeg(?B) .
 % r in not p
-rInNotPSub(?X, ?Y) :- sub(?X, ?Y), role(?X), negOf(?Y, ?Y1), role(?Y1), normForRole(?X), normForRole(?Y1) .
+rInNotPSub(?R, ?NotP, ?R, ?P) :- sub(?R, ?NotP), role(?R), negOf(?NotP, ?P), role(?P), normForRole(?R), normForRole(?P) .
 % r in not PMinus
-rInNotPMinusSub(?X, ?Y) :- sub(?X, ?Y), role(?X), normForRole(?X), negOf(?Y, ?Y1), invOf(?Y1, ?Y2), role(?Y2), normForRole(?Y2) .
+rInNotPMinusSub(?R, ?NotPMinus, ?R, ?P) :- sub(?R, ?NotPMinus), role(?R), normForRole(?R), negOf(?NotPMinus, ?PMinus), invOf(?PMinus, ?P), role(?P), normForRole(?P) .
 
 
 
