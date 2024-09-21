@@ -1,7 +1,7 @@
 from collections import defaultdict
-from coherence_update.rules.a_del import *
-from coherence_update.rules.neg_incl import *
-from coherence_update.rules.pos_incl import *
+from coherence_update.rules.atomic import *
+from coherence_update.rules.negative import *
+from coherence_update.rules.positive import *
 
 class CohrenceUpdate:
     def __init__(self, tbox):
@@ -43,7 +43,6 @@ class CohrenceUpdate:
         if not mapping:
             raise ValueError("Invalid closure type")
 
-
         for key, builder_method in mapping.items():
             inclusions = self.tbox.incl_dict[key]
             for incl in inclusions:
@@ -67,14 +66,23 @@ class CohrenceUpdate:
                     elif key == "aBInNotePMinusSub":
                         self._type6[left_closure_repr].append(incl.get_right_closure_repr())
                     elif key == "rInNotPSub":
-                        # TODO: implement type 7
-                        pass
+                        self._type7[left_closure_repr].append(incl.get_right_closure_repr())
                     elif key == "!!!":
-                        # TODO: implement type 8
+                        # TODO: Check CORRECTNESS
                         pass
-                    elif key == "rInNotPMinusSub":
-                        # TODO: IMPLEMENT FOR .rls
-                        pass
+                    elif key == "eRInNotePSub":
+                        self._type9[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "eRInNotePMinusSub":
+                        self._type10[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "eRMinusInNotePSub":
+                        self._type11[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "eRMinusInNotePMinusSub":
+                        self._type12[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "eRInNotaASub":
+                        self._type13[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "eRMinusInNotaASub":
+                        self._type14[left_closure_repr].append(incl.get_right_closure_repr())
+
 
         return rules
 
@@ -100,14 +108,17 @@ class CohrenceUpdate:
         rules = []
         atomic_concepts = self.tbox.repr_of("a_concepts")
         for a_concept in atomic_concepts:
-            b_reprs = self._type4[a_concept]
-            j_reprs = self._type5[a_concept]
-            r_reprs = self._type6[a_concept]
+            b_reprs, j_reprs, r_reprs = self._type4[a_concept], self._type5[a_concept], self._type6[a_concept]
             rules.extend(atomicA_closure(a_concept, b_reprs, j_reprs, r_reprs))
 
         atomic_roles = self.tbox.repr_of("roles")
         for a_role in atomic_roles:
-            pass
+            r_reprs, s_reprs, t_reprs = self._type7[a_role], self._type8[a_role], self._type9[a_role]
+            q_reprs, w_reprs, u_reprs = self._type10[a_role], self._type11[a_role], self._type12[a_role]
+            a_reprs, b_reprs = self._type13[a_role], self._type14[a_role]
+
+            rules.extend(roleP_closure(a_role, r_reprs, s_reprs, t_reprs, q_reprs, w_reprs, u_reprs, a_reprs, b_reprs))
+
 
         return rules
 

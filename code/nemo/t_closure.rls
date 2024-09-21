@@ -109,12 +109,25 @@ ePInNotaBSub(?ExistP, ?NotB, ?P, ?B) :- sub(?ExistP, ?NotB), domOf(?ExistP, ?P),
 aBInNotePMinusSub(?A, ?NotExistsPMinus, ?A, ?P) :- sub(?A, ?NotExistsPMinus), atomic(?A), normForNeg(?A), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P), normForNeg(?P) .
 % existsPMinus in not atomicB
 ePMinusInNotaBSub(?ExistsPMinus, ?NotB, ?P, ?B) :- sub(?ExistsPMinus, ?NotB), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P), normForNeg(?P), negOf(?NotB, ?B), atomic(?B), normForNeg(?B) .
-% r in not p
+% r in not p (type 7)
 rInNotPSub(?R, ?NotP, ?R, ?P) :- sub(?R, ?NotP), role(?R), negOf(?NotP, ?P), role(?P), normForRole(?R), normForRole(?P) .
 % r in not PMinus
 rInNotPMinusSub(?R, ?NotPMinus, ?R, ?P) :- sub(?R, ?NotPMinus), role(?R), normForRole(?R), negOf(?NotPMinus, ?PMinus), invOf(?PMinus, ?P), role(?P), normForRole(?P) .
 
+%% TODO(dnh): Correction of type 8 + implementation
 
+% domR in not domP (type 9)
+eRInNotePSub(?ExistsR, ?NotExistsP, ?R, ?P) :- sub(?ExistsR, ?NotExistsP), domOf(?ExistsR, ?R), normForRole(?R), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), normForRole(?P) .
+% domR in not rngP (type 10)
+eRInNotePMinusSub(?ExistsR, ?NotExistsPMinus, ?R, ?P) :- sub(?ExistsR, ?NotExistsPMinus), domOf(?ExistsR, ?R), normForRole(?R), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?PMinus), invOf(?PMinus, ?P), normForRole(?P) .
+% rngR in not domP (type 11)
+eRMinusInNotePSub(?ExistsRMinus, ?NotExistsP, ?R, ?P) :- sub(?ExistsRMinus, ?NotExistsP), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), normForRole(?R), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), normForRole(?P) .
+% rngR in not rngP (type 12)
+eRMinusInNotePMinusSub(?ExistsRMinus, ?NotExistsPMinus, ?R, ?P) :- sub(?ExistsRMinus, ?NotExistsPMinus), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), normForRole(?R), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?PMinus), invOf(?PMinus, ?P), normForRole(?P) .
+% domR in not atomic A (type 13)
+eRInNotaASub(?ExistsR, ?NotA, ?R, ?A) :- sub(?ExistsR, ?NotA), domOf(?ExistsR, ?R), normForRole(?R), negOf(?NotA, ?A), atomic(?A), normForNeg(?A) .
+% rngR in not atomic A (type 14)
+eRMinusInNotaASub(?ExistsRMinus, ?NotA, ?R, ?A) :- sub(?ExistsRMinus, ?NotA), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), normForRole(?R), negOf(?NotA, ?A), atomic(?A), normForNeg(?A) .
 
 %% ====================================================================================================
 %% ===================================== Computing cl(T) ==============================================
