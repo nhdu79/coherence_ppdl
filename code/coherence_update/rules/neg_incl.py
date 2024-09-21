@@ -27,10 +27,10 @@ def atomicA_closure(a_repr, b_reprs, j_reprs, r_reprs):
     for b_repr in b_reprs:
         r_closure += f", not ins{b_repr}Request(X)"
 
-    for j_repr, idx in enumerate(j_reprs):
+    for idx, j_repr in enumerate(j_reprs):
         r_closure += f", not ins{j_repr}Request(X,Y{idx+1})"
 
-    for r_repr, idx in enumerate(r_reprs):
+    for idx, r_repr in enumerate(r_reprs):
         r_closure += f", not ins{r_repr}Request(Y{idx+1},X)"
     r_closure += "."
 
@@ -62,13 +62,13 @@ def roleP_closure(p_repr, r_reprs, s_reprs, t_reprs, q_reprs, w_reprs, u_reprs, 
         r_closure += f", not ins{r_repr}Request(X,Y)"
     for s_repr in s_reprs:
         r_closure += f", not ins{s_repr}Request(Y,X)"
-    for t_repr, idx in enumerate(t_reprs):
+    for idx, t_repr in enumerate(t_reprs):
         r_closure += f", not ins{t_repr}Request(X,Y{idx+1})"
-    for q_repr, idx in enumerate(q_reprs):
+    for idx, q_repr in enumerate(q_reprs):
         r_closure += f", not ins{q_repr}Request(Y{idx+1},X)"
-    for w_repr, idx in enumerate(w_reprs):
+    for idx, w_repr in enumerate(w_reprs):
         r_closure += f", not ins{w_repr}Request(Y,X{idx+1})"
-    for u_repr, idx in enumerate(u_reprs):
+    for idx, u_repr in enumerate(u_reprs):
         r_closure += f", not ins{u_repr}Request(X{idx+1},Y)"
     for a_repr in a_reprs:
         r_closure += f", not ins{a_repr}Request(X)"
@@ -131,6 +131,4 @@ NEG_INCL_METHOD_MAP = {
     "rInNotPSub": r_in_not_P,
     "rInNotPMinusSub": r_in_not_invP
 }
-
-
 

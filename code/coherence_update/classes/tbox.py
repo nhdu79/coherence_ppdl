@@ -3,7 +3,7 @@ from collections import defaultdict
 from utils.functions import get_repr
 
 class TBox:
-    def __init__(self, inclusions, roles=None, a_concepts=None):
+    def __init__(self, inclusions, **kwargs):
         """
             :param inclusions: dict of inclusions
                 key: inclusion type
@@ -11,8 +11,11 @@ class TBox:
             :param roles: list of roles
             :param a_concepts: list of atomic concepts
         """
-        self.roles = roles
-        self.a_concepts = a_concepts
+        self.roles = kwargs.get("roles", [])
+        self.a_concepts = kwargs.get("a_concepts", [])
+        self.functs = kwargs.get("functs", [])
+        self.inv_functs = kwargs.get("functs_inv", [])
+
         self.incl_dict = defaultdict(lambda: [])
         for incl_type, incl_list in inclusions.items():
             for incl in incl_list:
@@ -21,8 +24,8 @@ class TBox:
                 new_incl = Inclusion(incl_type, left_uri, right_uri, left_atomic_uri, right_atomic_uri)
                 self.incl_dict[incl_type].append(new_incl)
 
-    def a_concepts_repr(self):
-        return [get_repr(concept) for concept in self.a_concepts]
+    def repr_of(self, collection):
+        if collection not in self.__dict__:
+            return []
 
-    def roles_repr(self):
-        return [get_repr(role) for role in self.roles]
+        return [get_repr(item) for item in self.__dict__[collection]]

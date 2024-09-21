@@ -79,7 +79,6 @@ def roleR_in_roleP(r_repr, p_repr):
     return [r_del, r_inc]
 
 
-# TODO(dnh): Implement si_reprs
 def roleR_in_roleP_closure(r_repr, p_repr, pi_reprs, si_reprs):
     """
         param pi_reprs: list of P_i roles where
@@ -132,23 +131,6 @@ def invR_in_roleP(left_repr, right_repr):
     return [r_del, r_inc]
 
 
-def functP(repr):
-    """
-        Caution: repr is representation of `P`, not `functP`
-    """
-    r_del = f"del{repr}(X,Y) :- {repr}(X,Y), ins{repr}Request(X,Z), Y!=Z."
-    r_inc = f"incompatibleUpdate() :- ins{repr}Request(X,Y), ins{repr}Request(X,Z), Y!=Z."
-    return [r_del, r_inc]
-
-
-def functInvP(repr):
-    """
-        Caution: repr is representation of `P`, not `functP`
-    """
-    r_del = f"del{repr}(X,Y) :- {repr}(X,Y), ins{repr}Request(Z,Y), X!=Z."
-    r_inc = f"incompatibleUpdate() :- ins{repr}Request(X,Y), ins{repr}Request(Z,Y), X!=Z."
-    return [r_del, r_inc]
-
 
 POS_INCL_METHOD_MAP = {
     "aAInaBSub": atomicB_in_atomicA,
@@ -163,7 +145,6 @@ POS_INCL_CLOSURE_METHOD_MAP = {
     "aAInaBSub": atomicB_in_atomicA_closure,
     "rInPSub": roleR_in_roleP_closure,
     "rInPMinusSub": roleR_in_invP_closure,
-    "rMinusInPSub": roleR_in_invP_closure,
     "ePInaBSub": domP_in_atomicB_closure,
     "ePMinusInaBSub": rngP_in_atomicB_closure,
 }

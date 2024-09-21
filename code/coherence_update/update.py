@@ -6,30 +6,108 @@ from coherence_update.rules.pos_incl import *
 class CohrenceUpdate:
     def __init__(self, tbox):
         self.tbox = tbox
+        self._type1, self._type2, self._type3 = [defaultdict(list) for _ in range(3)]
+        self._type4, self._type5, self._type6 = [defaultdict(list) for _ in range(3)]
+        self._type7, self._type8, self._type9 = [defaultdict(list) for _ in range(3)]
+        self._type10, self._type11, self._type12 = [defaultdict(list) for _ in range(3)]
+        self._type13, self._type14 = [defaultdict(list) for _ in range(2)]
+        # A in A_i => type 1
+        # P in P_i => type 2
+        # P in P_i^- => type 3
+        # A in not A_i => type 4
+        # A in not dom(P_i) => type 5
+        # A in not rng(P_i) => type 6
+        # P in not P_i => type 7
+        # !!! P in not rng(S_i) => type 8 !!!
+        # dom(P) in not dom(T_i) => type 9
+        # dom(P) in not rng(Q_i) => type 10
+        # rng(P) in not dom(W_i) => type 11
+        # rng(P) in not rng(U_i) => type 12
+        # dom(P) in not A_i => type 13
+        # rng(P) in not B_i => type 14
 
-    def build_atomic_del_rules(self):
-        atomic_concepts = self.tbox.a_concepts_repr()
-        atomic_roles = self.tbox.roles_repr()
+    def build_atomic_del_and_funct_rules(self):
+        atomic_concepts = self.tbox.repr_of("a_concepts")
+        atomic_roles = self.tbox.repr_of("roles")
+        functs, inv_functs = self.tbox.repr_of("functs"), self.tbox.repr_of("inv_functs")
+
         r_concepts = build_del_concept_and_incompatible_rules_for_atomic_concepts(atomic_concepts)
         r_roles = build_del_role_and_incompatible_rules_for_roles(atomic_roles)
+        r_functs = build_funct_P_and_funct_inv_P_rules(functs, inv_functs)
 
-        return r_concepts + r_roles
+        return r_concepts + r_roles + r_functs
 
     def build_update_rules(self, closure_type):
-        mapping = closure_type == "positive" and POS_INCL_METHOD_MAP or NEG_INCL_METHOD_MAP
         rules = []
-        for key, method in mapping.items():
+        mapping = (closure_type == "positive" and POS_INCL_METHOD_MAP) or (closure_type == "negative" and NEG_INCL_METHOD_MAP) or None
+        if not mapping:
+            raise ValueError("Invalid closure type")
+
+
+        for key, builder_method in mapping.items():
             inclusions = self.tbox.incl_dict[key]
             for incl in inclusions:
-                rules.extend(method(incl.get_left_repr(), incl.get_right_repr()))
+                left_repr = incl.get_left_repr()
+                right_repr = incl.get_right_repr()
+                left_closure_repr = incl.get_left_closure_repr()
+                right_closure_repr = incl.get_right_closure_repr()
+                rules.extend(builder_method(left_repr, right_repr))
+                if closure_type == "positive":
+                    if key == "aAInaBSub":
+                        self._type1[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "rInPSub":
+                        self._type2[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "rInPMinusSub":
+                        self._type3[left_closure_repr].append(incl.get_right_closure_repr())
+                elif closure_type == "negative":
+                    if key == "aAInNotaBSub":
+                        self._type4[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "aBInNotePSub":
+                        self._type5[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "aBInNotePMinusSub":
+                        self._type6[left_closure_repr].append(incl.get_right_closure_repr())
+                    elif key == "rInNotPSub":
+                        # TODO: implement type 7
+                        pass
+                    elif key == "!!!":
+                        # TODO: implement type 8
+                        pass
+                    elif key == "rInNotPMinusSub":
+                        # TODO: IMPLEMENT FOR .rls
+                        pass
 
         return rules
 
     def build_positive_closure_update_rules(self):
-        # TODO: Implement
         rules = []
+        for key, builder_method in POS_INCL_CLOSURE_METHOD_MAP.items():
+            inclusions = self.tbox.incl_dict[key]
+            for incl in inclusions:
+                left_repr = incl.get_left_repr()
+                right_repr = incl.get_right_repr()
+                if key in ["aAInaBSub", "ePInaBSub", "ePMinusInaBSub"]:
+                    closure_reprs = self._type1[left_repr]
+                    rules.extend(builder_method(left_repr, right_repr, closure_reprs))
+                elif key in ["rInPSub", "rInPMinusSub"]:
+                    pi_reprs = self._type2[left_repr]
+                    si_reprs = self._type3[left_repr]
+                    rules.extend(builder_method(left_repr, right_repr, pi_reprs, si_reprs))
+
         return rules
 
+
     def build_negative_closure_update_rules(self):
-        # TODO: Implement
-        pass
+        rules = []
+        atomic_concepts = self.tbox.repr_of("a_concepts")
+        for a_concept in atomic_concepts:
+            b_reprs = self._type4[a_concept]
+            j_reprs = self._type5[a_concept]
+            r_reprs = self._type6[a_concept]
+            rules.extend(atomicA_closure(a_concept, b_reprs, j_reprs, r_reprs))
+
+        atomic_roles = self.tbox.repr_of("roles")
+        for a_role in atomic_roles:
+            pass
+
+        return rules
+

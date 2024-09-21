@@ -71,7 +71,10 @@ role(!notP), negOf(!notP, ?P):- role(?P), normForRole(?P) .
 role(!Q), invOf(!Q, ?P) :- role(?P), normForRole(?P) .
 % atomic
 atomic(?X) :- concept(?X), ~domOf(?X, ?P), ~rngOf(?X, ?Q),  normForNeg(?X) .
-
+% norm funct
+normForFunct(?P) :- funct(?P), normForRole(?P) .
+% inverse funct
+functInv(?P) :- funct(?P), invOf(?P, ?Q), normForRole(?Q) .
 
 
 %% ====================================================================================================
