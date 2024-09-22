@@ -12,8 +12,8 @@ def build_del_concept_and_incompatible_rules_for_atomic_concepts(a_concepts):
     """
     rules = []
     for a_concept in a_concepts:
-        r_del = f"del{a_concept}(X) :- del{a_concept}Request(X), {a_concept}(X)."
-        r_inc = f"incompatibleUpdate() :- ins{a_concept}Request(?X), del{a_concept}Request(X)."
+        r_del = f"del_{a_concept}(X) :- del_{a_concept}_request(X), {a_concept}(X)."
+        r_inc = f"incompatible_update() :- ins_{a_concept}_request(?X), del_{a_concept}_request(X)."
         rules.extend([r_del, r_inc])
 
     return rules
@@ -27,8 +27,8 @@ def build_del_role_and_incompatible_rules_for_roles(roles):
     """
     rules = []
     for role in roles:
-        r_del = f"del{role}(X, Y) :- del{role}Request(X, Y), {role}(X, Y)."
-        r_inc = f"incompatibleUpdate() :- ins{role}Request(X), del{role}Request(X)."
+        r_del = f"del_{role}(X, Y) :- del_{role}_request(X, Y), {role}(X, Y)."
+        r_inc = f"incompatible_update() :- ins_{role}_request(X), del_{role}_request(X)."
         rules.extend([r_del, r_inc])
 
     return rules
@@ -54,8 +54,8 @@ def functP(repr):
     """
         Caution: repr is representation of `P`, not `functP`
     """
-    r_del = f"del{repr}(X,Y) :- {repr}(X,Y), ins{repr}Request(X,Z), Y!=Z."
-    r_inc = f"incompatibleUpdate() :- ins{repr}Request(X,Y), ins{repr}Request(X,Z), Y!=Z."
+    r_del = f"del_{repr}(X,Y) :- {repr}(X,Y), ins_{repr}_request(X,Z), Y!=Z."
+    r_inc = f"incompatible_update() :- ins_{repr}_request(X,Y), ins_{repr}_request(X,Z), Y!=Z."
     return [r_del, r_inc]
 
 
@@ -63,7 +63,7 @@ def functInvP(repr):
     """
         Caution: repr is representation of `P`, not `functP`
     """
-    r_del = f"del{repr}(X,Y) :- {repr}(X,Y), ins{repr}Request(Z,Y), X!=Z."
-    r_inc = f"incompatibleUpdate() :- ins{repr}Request(X,Y), ins{repr}Request(Z,Y), X!=Z."
+    r_del = f"del_{repr}(X,Y) :- {repr}(X,Y), ins_{repr}_request(Z,Y), X!=Z."
+    r_inc = f"incompatible_update() :- ins_{repr}_request(X,Y), ins_{repr}_request(Z,Y), X!=Z."
     return [r_del, r_inc]
 

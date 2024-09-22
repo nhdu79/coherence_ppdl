@@ -15,10 +15,13 @@ def get_repr(uri):
     name = uri.split('/')[-1].split('#')[-1]
     # check if name is a blank node
     if name.startswith('_:'):
-        name = f"BlankNode{name[2:]}"
+        name = f"blank{name[2:]}"
     else:
-        name = re.sub(r'_([a-z])', lambda x: x.group(1).upper(), name)
-        name = name[0].upper() + name[1:]
+        # name = re.sub(r'_([a-z])', lambda x: x.group(1).upper(), name)
+        # name = name[0].upper() + name[1:]
+
+        # snake case of name
+        name = re.sub(r'([a-z])([A-Z])', r'\1_\2', name).lower()
     return name
 
 

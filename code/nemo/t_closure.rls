@@ -7,7 +7,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator.ttl"} .
+@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator/elevator.ttl"} .
 
 
 
@@ -114,7 +114,7 @@ rInNotPSub(?R, ?NotP, ?R, ?P) :- sub(?R, ?NotP), role(?R), negOf(?NotP, ?P), rol
 % r in not PMinus
 rInNotPMinusSub(?R, ?NotPMinus, ?R, ?P) :- sub(?R, ?NotPMinus), role(?R), normForRole(?R), negOf(?NotPMinus, ?PMinus), invOf(?PMinus, ?P), role(?P), normForRole(?P) .
 
-%% TODO(dnh): Correction of type 8 + implementation
+%% TODO: Correction of type 8 + implementation
 
 % domR in not domP (type 9)
 eRInNotePSub(?ExistsR, ?NotExistsP, ?R, ?P) :- sub(?ExistsR, ?NotExistsP), domOf(?ExistsR, ?R), normForRole(?R), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), normForRole(?P) .

@@ -83,7 +83,6 @@ class CohrenceUpdate:
                     elif key == "eRMinusInNotaASub":
                         self._type14[left_closure_repr].append(incl.get_right_closure_repr())
 
-
         return rules
 
     def build_positive_closure_update_rules(self):
@@ -103,7 +102,6 @@ class CohrenceUpdate:
 
         return rules
 
-
     def build_negative_closure_update_rules(self):
         rules = []
         atomic_concepts = self.tbox.repr_of("a_concepts")
@@ -118,7 +116,6 @@ class CohrenceUpdate:
             a_reprs, b_reprs = self._type13[a_role], self._type14[a_role]
 
             rules.extend(roleP_closure(a_role, r_reprs, s_reprs, t_reprs, q_reprs, w_reprs, u_reprs, a_reprs, b_reprs))
-
 
         return rules
 

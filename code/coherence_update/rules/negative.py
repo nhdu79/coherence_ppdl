@@ -6,9 +6,9 @@ def atomicB_in_not_atomicA(b_repr, a_repr):
     """
         Caution: a_repr is representation of `A`, not `not A`
     """
-    r_del_b = f"del{b_repr}(X) :- {b_repr}(X), ins{a_repr}Request(X)."
-    r_del_a = f"del{a_repr}(X) :- {a_repr}(X), ins{b_repr}Request(X)."
-    r_inc = f"incompatibleUpdate() :- ins{b_repr}Request(X), ins{a_repr}Request(X)."
+    r_del_b = f"del_{b_repr}(X) :- {b_repr}(X), ins_{a_repr}_request(X)."
+    r_del_a = f"del_{a_repr}(X) :- {a_repr}(X), ins_{b_repr}_request(X)."
+    r_inc = f"incompatible_update() :- ins_{b_repr}_request(X), ins_{a_repr}_request(X)."
 
     return [r_del_b, r_del_a, r_inc]
 
@@ -23,15 +23,15 @@ def atomicA_closure(a_repr, b_reprs, j_reprs, r_reprs):
         param r_reprs: list of R_i roles where
             A in lnot rng(R_i)
     """
-    r_closure = f"ins{a_repr}(X) :- ins{a_repr}closure(X)"
+    r_closure = f"ins_{a_repr}(X) :- ins_{a_repr}_closure(X)"
     for b_repr in b_reprs:
-        r_closure += f", not ins{b_repr}Request(X)"
+        r_closure += f", not ins_{b_repr}_request(X)"
 
     for idx, j_repr in enumerate(j_reprs):
-        r_closure += f", not ins{j_repr}Request(X,Y{idx+1})"
+        r_closure += f", not ins_{j_repr}_request(X,Y{idx+1})"
 
     for idx, r_repr in enumerate(r_reprs):
-        r_closure += f", not ins{r_repr}Request(Y{idx+1},X)"
+        r_closure += f", not ins_{r_repr}_request(Y{idx+1},X)"
     r_closure += "."
 
     return [r_closure]
@@ -57,23 +57,23 @@ def roleP_closure(p_repr, r_reprs, s_reprs, t_reprs, q_reprs, w_reprs, u_reprs, 
         param b_reprs: list of B_i concepts where
             rng(P) in lnot B_i
     """
-    r_closure = f"ins{p_repr}(X,Y) :- ins{p_repr}closure(X,Y)"
+    r_closure = f"ins_{p_repr}(X,Y) :- ins_{p_repr}_closure(X,Y)"
     for r_repr in r_reprs:
-        r_closure += f", not ins{r_repr}Request(X,Y)"
+        r_closure += f", not ins_{r_repr}_request(X,Y)"
     for s_repr in s_reprs:
-        r_closure += f", not ins{s_repr}Request(Y,X)"
+        r_closure += f", not ins_{s_repr}_request(Y,X)"
     for idx, t_repr in enumerate(t_reprs):
-        r_closure += f", not ins{t_repr}Request(X,Y{idx+1})"
+        r_closure += f", not ins_{t_repr}_request(X,Y{idx+1})"
     for idx, q_repr in enumerate(q_reprs):
-        r_closure += f", not ins{q_repr}Request(Y{idx+1},X)"
+        r_closure += f", not ins_{q_repr}_request(Y{idx+1},X)"
     for idx, w_repr in enumerate(w_reprs):
-        r_closure += f", not ins{w_repr}Request(Y,X{idx+1})"
+        r_closure += f", not ins_{w_repr}_request(Y,X{idx+1})"
     for idx, u_repr in enumerate(u_reprs):
-        r_closure += f", not ins{u_repr}Request(X{idx+1},Y)"
+        r_closure += f", not ins_{u_repr}_request(X{idx+1},Y)"
     for a_repr in a_reprs:
-        r_closure += f", not ins{a_repr}Request(X)"
+        r_closure += f", not ins_{a_repr}_request(X)"
     for b_repr in b_reprs:
-        r_closure += f", not ins{b_repr}Request(Y)"
+        r_closure += f", not ins_{b_repr}_request(Y)"
     r_closure += "."
 
     return [r_closure]
@@ -83,9 +83,9 @@ def atomicB_in_not_domP(b_repr, p_repr):
     """
         Caution: p_repr is representation of `P`, not `not existsP`
     """
-    r_del_b = f"del{b_repr}(X) :- {b_repr}(X), ins{p_repr}Request(X,Y)."
-    r_del_p = f"del{p_repr}(X,Y) :- {p_repr}(X,Y), ins{b_repr}Request(X)."
-    r_inc = f"incompatibleUpdate() :- ins{b_repr}Request(X), ins{p_repr}Request(X,Y)."
+    r_del_b = f"del_{b_repr}(X) :- {b_repr}(X), ins_{p_repr}_request(X,Y)."
+    r_del_p = f"del_{p_repr}(X,Y) :- {p_repr}(X,Y), ins_{b_repr}_request(X)."
+    r_inc = f"incompatible_update() :- ins_{b_repr}_request(X), ins_{p_repr}_request(X,Y)."
 
     return [r_del_b, r_del_p, r_inc]
 
@@ -95,9 +95,9 @@ def domP_in_not_atomicB(p_repr, b_repr):
         Caution: p_repr is representation of `P`, not `existsP`
             b_repr is representation of `B`
     """
-    r_del_p = f"del{b_repr}(X,Y) :- {b_repr}(X,Y), ins{p_repr}Request(X)."
-    r_del_b = f"del{p_repr}(X) :- {p_repr}(X), ins{b_repr}Request(X,Y)."
-    r_inc = f"incompatibleUpdate() :- ins{p_repr}Request(X), ins{b_repr}Request(X,Y)."
+    r_del_p = f"del_{b_repr}(X,Y) :- {b_repr}(X,Y), ins_{p_repr}_request(X)."
+    r_del_b = f"del_{p_repr}(X) :- {p_repr}(X), ins_{b_repr}_request(X,Y)."
+    r_inc = f"incompatible_update() :- ins_{p_repr}_request(X), ins_{b_repr}_request(X,Y)."
 
     return [r_del_b, r_del_p, r_inc]
 
@@ -106,9 +106,9 @@ def r_in_not_P(r_repr, p_repr):
     """
         Caution: p_repr is representation of `P`, not `not P`
     """
-    r_del_r = f"del{r_repr}(X,Y) :- {r_repr}(X,Y), ins{p_repr}Request(X,Y)."
-    r_del_p = f"del{p_repr}(X,Y) :- {p_repr}(X,Y), ins{r_repr}Request(X,Y)."
-    r_inc = f"incompatibleUpdate() :- ins{r_repr}Request(X,Y), ins{p_repr}Request(X,Y)."
+    r_del_r = f"del_{r_repr}(X,Y) :- {r_repr}(X,Y), ins_{p_repr}_request(X,Y)."
+    r_del_p = f"del_{p_repr}(X,Y) :- {p_repr}(X,Y), ins_{r_repr}_request(X,Y)."
+    r_inc = f"incompatible_update() :- ins_{r_repr}_request(X,Y), ins_{p_repr}_request(X,Y)."
 
     return [r_del_r, r_del_p, r_inc]
 
@@ -117,9 +117,9 @@ def r_in_not_invP(r_repr, p_repr):
     """
         Caution: p_repr is representation of `P`, not `not invP`
     """
-    r_del_r = f"del{r_repr}(X,Y) :- {r_repr}(X,Y), ins{p_repr}Request(Y,X)."
-    r_del_p = f"del{p_repr}(X,Y) :- {p_repr}(X,Y), ins{r_repr}Request(Y,X)."
-    r_inc = f"incompatibleUpdate() :- ins{r_repr}Request(Y,X), ins{p_repr}Request(Y,X)."
+    r_del_r = f"del_{r_repr}(X,Y) :- {r_repr}(X,Y), ins_{p_repr}_request(Y,X)."
+    r_del_p = f"del_{p_repr}(X,Y) :- {p_repr}(X,Y), ins_{r_repr}_request(Y,X)."
+    r_inc = f"incompatible_update() :- ins_{r_repr}_request(Y,X), ins_{p_repr}_request(Y,X)."
 
     return [r_del_r, r_del_p, r_inc]
 
