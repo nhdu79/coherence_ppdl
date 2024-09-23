@@ -1,0 +1,3 @@
+[submodule "pddl-horndl"]
+	path = pddl-horndl
+	url = https://gitlab.perspicuous-computing.science/a.kovtunova/pddl-horndl.git
