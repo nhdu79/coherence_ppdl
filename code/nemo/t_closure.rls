@@ -9,7 +9,7 @@
 
 % @import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator/elevator.ttl"} .
 
-@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/robots/TTL100.ttl"} .
+@import TRIPLE :- turtle{resource="/home/zinzin2312/Desktop/repos/coherence_ppdl/benchmarks/ontologies/robots/TTL100.ttl"} .
 
 
 
@@ -18,7 +18,10 @@
 %% ====================================================================================================
 
 %% functional property
-% TODO: Introduce domOf and rngOf
+% TODO: Introduce domOf and rngOf; SPLIT INTO MULTIPLES; CREATE NEW FOR EACH ROLE domOf... !P
+% TODO: ATOMIC DIRECT IN CLASS DEFINITION
+
+
 role(?P), funct(?P), normForRole(?P) :- TRIPLE(?P, rdf:type, owl:ObjectProperty), TRIPLE(?P, rdf:type, owl:FunctionalProperty) .
 
 
@@ -65,6 +68,9 @@ sub(?P, ?Q1) :- TRIPLE(?P, owl:propertyDisjointWith, ?Q), negOf(?P, ?Q1) .
 
 
 %% additional rules for connecting conceptes and roles
+%% domPrimeOf(!New,P):- role(P)
+%% repOf(?New,?X) :- domPrimeOf(?X, ?P), domOf(?New, ?P)
+
 % concept negation
 concept(!notX), negOf(!notX, ?X) :- concept(?X), normForNeg(?X) .
 % role negation
