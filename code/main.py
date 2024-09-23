@@ -26,21 +26,24 @@ rules3 = update.build_update_rules("negative")
 rules4 = update.build_positive_closure_update_rules()
 rules5 = update.build_negative_closure_update_rules()
 
-
 # print("\n\nAtomic del and funct rules:")
 # pprint.pprint(rules1)
 # print("\nPositive update rules:")
 # pprint.pprint(rules2)
 # print("\nNegative update rules:")
 # pprint.pprint(rules3)
-print("\nPositive closure update rules:")
-pprint.pprint(rules4)
-print("\nNegative closure update rules:")
-pprint.pprint(rules5)
+# print("\nPositive closure update rules:")
+# pprint.pprint(rules4)
+# print("\nNegative closure update rules:")
+# pprint.pprint(rules5)
 
 breakpoint()
 
 del inclusions
+del roles
+del a_atomics
+del functs
+del inv_functs
 
 # inclusion = "http://www.semanticweb.org/anon/ontologies/2021/3/lift_at,_:7"
 # print(get_inclusion_type(inclusion, predicates))

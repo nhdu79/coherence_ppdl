@@ -7,7 +7,9 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator/elevator.ttl"} .
+% @import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator/elevator.ttl"} .
+
+@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/robots/TTL100.ttl"} .
 
 
 
