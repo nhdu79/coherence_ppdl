@@ -4,6 +4,16 @@ from coherence_update.rules.negative import *
 from coherence_update.rules.positive import *
 
 class CohrenceUpdate:
+    def run(tbox):
+        update = CohrenceUpdate(tbox)
+        rules = []
+        rules.extend(update.build_atomic_del_and_funct_rules())
+        rules.extend(update.build_update_rules("positive"))
+        rules.extend(update.build_update_rules("negative"))
+        rules.extend(update.build_positive_closure_update_rules())
+        rules.extend(update.build_negative_closure_update_rules())
+        return rules
+
     def __init__(self, tbox):
         self.tbox = tbox
         self._type1, self._type2, self._type3 = [defaultdict(list) for _ in range(3)]
@@ -67,9 +77,8 @@ class CohrenceUpdate:
                         self._type6[left_closure_repr].append(incl.get_right_closure_repr())
                     elif key == "rInNotPSub":
                         self._type7[left_closure_repr].append(incl.get_right_closure_repr())
-                    elif key == "!!!":
-                        # TODO: Check CORRECTNESS
-                        pass
+                    elif key == "rInNotPMinusSub":
+                        self._type8[left_closure_repr].append(incl.get_right_closure_repr())
                     elif key == "eRInNotePSub":
                         self._type9[left_closure_repr].append(incl.get_right_closure_repr())
                     elif key == "eRInNotePMinusSub":

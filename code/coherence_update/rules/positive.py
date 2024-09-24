@@ -20,6 +20,9 @@ def atomicB_in_atomicA_closure(b_repr, a_repr, ai_reprs):
     r_closure = f"ins_{a_repr}_closure(X) :- del_{b_repr}(X), not {a_repr}(X), not ins_{a_repr}_request(X), not del_{a_repr}_request(X)"
 
     for ai_repr in ai_reprs:
+        if ai_repr == a_repr:
+            continue
+
         r_closure += f", not del_{ai_repr}_request(X)"
     r_closure += "."
 
@@ -43,6 +46,9 @@ def domP_in_atomicB_closure(p_repr, b_repr, bi_reprs):
     r_closure = f"ins_{b_repr}_closure(X) :- del_{p_repr}(X,Y), not {b_repr}(X), not ins_{b_repr}_request(X), not del_{b_repr}_request(X)"
 
     for bi_repr in bi_reprs:
+        if bi_repr == b_repr:
+            continue
+
         r_closure += f", not del_{bi_repr}_request(X)"
     r_closure += "."
 
@@ -67,6 +73,9 @@ def rngP_in_atomicB_closure(p_repr, b_repr, bi_reprs):
     r_closure = f"ins_{b_repr}_closure(X) :- del_{p_repr}(Y,X), not {b_repr}(X), not ins_{b_repr}_request(X), not del_{b_repr}_request(X)"
 
     for bi_repr in bi_reprs:
+        if bi_repr == b_repr:
+            continue
+
         r_closure += f", not del_{bi_repr}_request(X)"
     r_closure += "."
 
@@ -89,6 +98,9 @@ def roleR_in_roleP_closure(r_repr, p_repr, pi_reprs, si_reprs):
     r_closure = f"ins_{p_repr}_closure(X,Y) :- del_{r_repr}(X,Y), not {p_repr}(X,Y), not ins_{p_repr}_request(X,Y), not del_{p_repr}_request(X,Y)"
 
     for pi_repr in pi_reprs:
+        if pi_repr == p_repr:
+            continue
+
         r_closure += f", not del_{pi_repr}_request(X,Y)"
 
     for si_repr in si_reprs:
@@ -117,6 +129,9 @@ def roleR_in_invP_closure(r_repr, p_repr, pi_reprs, si_reprs):
 
     r_closure = f"ins_{p_repr}_closure(X,Y) :- del_{r_repr}(Y,X), not {p_repr}(X,Y), not ins_{p_repr}_request(X,Y), not del_{p_repr}_request(X,Y)"
     for pi_repr in pi_reprs:
+        if pi_repr == p_repr:
+            continue
+
         r_closure += f", not del_{pi_repr}_request(X,Y)"
     for si_repr in si_reprs:
         r_closure += f", not del_{si_repr}_request(Y,X)"
