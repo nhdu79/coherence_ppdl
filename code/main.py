@@ -9,22 +9,22 @@ try:
     path = os.path.dirname(os.path.abspath(__file__))
     tmp_dir = os.path.join(path, '..', 'tmp')
     inclusions = read_predicates(tmp_dir, INCLUSION_TYPES_ORDER)
-    roles = read_unary_predicate(tmp_dir, 'normForRole')
-    a_atomics = read_unary_predicate(tmp_dir, 'atomic')
-    functs = read_unary_predicate(tmp_dir, 'normForFunct')
-    inv_functs = read_unary_predicate(tmp_dir, 'functInv')
+    roles = read_unary_predicate(tmp_dir, 'atomicRole')
+    a_atomics = read_unary_predicate(tmp_dir, 'atomicConcept')
+    functs = read_unary_predicate(tmp_dir, 'funct')
+    invFunct = read_unary_predicate(tmp_dir, 'invFunct')
 except FileNotFoundError as e:
     print(e)
     exit(1)
 
-tbox = TBox(inclusions, roles=roles, a_concepts=a_atomics, functs=functs, functs_inv=inv_functs)
+tbox = TBox(inclusions, roles=roles, a_concepts=a_atomics, functs=functs, functs_inv=invFunct)
 
-update = CohrenceUpdate(tbox)
-rules1 = update.build_atomic_del_and_funct_rules()
-rules2 = update.build_update_rules("positive")
-rules3 = update.build_update_rules("negative")
-rules4 = update.build_positive_closure_update_rules()
-rules5 = update.build_negative_closure_update_rules()
+# update = CohrenceUpdate(tbox)
+# rules1 = update.build_atomic_del_and_funct_rules()
+# rules2 = update.build_update_rules("positive")
+# rules3 = update.build_update_rules("negative")
+# rules4 = update.build_positive_closure_update_rules()
+# rules5 = update.build_negative_closure_update_rules()
 
 # print("\n\nAtomic del and funct rules:")
 # pprint.pprint(rules1)
@@ -37,13 +37,11 @@ rules5 = update.build_negative_closure_update_rules()
 # print("\nNegative closure update rules:")
 # pprint.pprint(rules5)
 
-breakpoint()
 
-del inclusions
-del roles
-del a_atomics
-del functs
-del inv_functs
+rules = CohrenceUpdate.run(tbox)
+with open(os.path.join(tmp_dir, '_update_rules.txt'), 'w') as f:
+    for rule in rules:
+        f.write(rule + '\n')
 
 # inclusion = "http://www.semanticweb.org/anon/ontologies/2021/3/lift_at,_:7"
 # print(get_inclusion_type(inclusion, predicates))

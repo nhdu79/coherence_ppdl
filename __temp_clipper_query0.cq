@@ -1,0 +1,1 @@
+QUERY0(?0,?1) <- boarded(?1), destin(?1,?0)

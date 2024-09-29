@@ -3,11 +3,10 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator/elevator.ttl"} .
-
+% @import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/elevator/elevator.ttl"} .
 % @import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/repos/coherence_ppdl/benchmarks/ontologies/robots/TTL100.ttl"} .
 
-
+@import TRIPLE :- turtle{resource="/home/zinzin2312/repos/coherence_ppdl/benchmarks/ontologies/cats/cats.ttl"} .
 
 %% ====================================================================================================
 %% =================================== Build data from triples ========================================
@@ -16,15 +15,21 @@
 % TODO: ATOMIC DIRECT IN CLASS DEFINITION
 
 %% role/property
-role(?P), normForNeg(?P), normForRole(?P) :- TRIPLE(?P, rdf:type, owl:ObjectProperty) .
+% role(?P), normForNeg(?P), normForRole(?P) :- TRIPLE(?P, rdf:type, owl:ObjectProperty) .
+role(?P), atomic(?P) :- TRIPLE(?P, rdf:type, owl:ObjectProperty) .
 
 
 %% concept/class
-concept(?X), normForNeg(?X) :- TRIPLE(?X, rdf:type, owl:Class) .
+% concept(?X), normForNeg(?X) :- TRIPLE(?X, rdf:type, owl:Class) .
+concept(?X), atomic(?X) :- TRIPLE(?X, rdf:type, owl:Class) .
 
 
 %% functional property
-funct(?P), role(?P), normForRole(?P), normForNeg(?P) :- TRIPLE(?P, rdf:type, owl:FunctionalProperty) .
+funct(?P) :- TRIPLE(?P, rdf:type, owl:FunctionalProperty) .
+
+
+%% inverse functional property
+invFunct(?P) :- TRIPLE(?P, rdf:type, owl:InverseFunctionalProperty) .
 
 
 %% 1.1.) property with dom and rng
@@ -33,8 +38,11 @@ auxRngOf(?Y, ?P) :- TRIPLE(?P, rdfs:range, ?Y) .
 
 
 %% 1.2.) ?X := \existsP
-concept(?X), normForNeg(?X) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P) .
-auxDomOf(?X, ?P), auxRngOf(?X, ?Q) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P), invOf(?P, ?Q) .
+% concept(?X), normForNeg(?X) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P) .
+concept(?X) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing) .
+
+% auxDomOf(?X, ?P), auxRngOf(?X, ?Q) :- TRIPLE(?X, owl:someValuesFrom, owl:Thing), TRIPLE(?X, owl:onProperty, ?P), invOf(?P, ?Q) .
+auxDomOf(?X, ?P), auxRngOf(?X, ?Q) :- TRIPLE(?X, owl:onProperty, ?P), invOf(?P, ?Q) .
 
 
 %% subsumption
@@ -51,13 +59,12 @@ sub(?P, ?Q), sub(?Q, ?P) :- TRIPLE(?P, owl:equivalentProperty, ?Q) .
 
 
 %% concept disjoint
-sub(?X, ?Y1) :- TRIPLE(?X, owl:disjointWith, ?Y), negOf(?Y, ?Y1) .
-
+sub(?X, ?Y1) :- TRIPLE(?X, owl:disjointWith, ?Y), negOf(?Y1, ?Y) .
 
 %% role disjoint
 % Warning: Case not in benchmarks
-sub(?P, ?Q1) :- TRIPLE(?P, owl:propertyDisjointWith, ?Q), negOf(?P, ?Q1) .
-
+% sub(?P, ?Q1) :- TRIPLE(?P, owl:propertyDisjointWith, ?Q), negOf(?P, ?Q1) .
+sub(?P, ?Q1) :- TRIPLE(?P, owl:propertyDisjointWith, ?Q), negOf(?Q1, ?Q) .
 
 
 %% ====================================================================================================
@@ -71,18 +78,23 @@ repOf(?Uniq, ?X) :- domOf(?Uniq, ?P), auxDomOf(?X, ?P) .
 rngOf(!Uniq, ?P) :- role(?P) .
 repOf(?Uniq, ?X) :- rngOf(?Uniq, ?P), auxRngOf(?X, ?P) .
 % concept negation
-concept(!notX), negOf(!notX, ?X) :- concept(?X), normForNeg(?X) .
-% role negation
-role(!notP), negOf(!notP, ?P):- role(?P), normForRole(?P) .
-% role inverse
-role(!Q), invOf(!Q, ?P) :- role(?P), normForRole(?P) .
-% atomic
-atomic(?X) :- concept(?X), ~domOf(?X, ?P), ~rngOf(?X, ?Q),  normForNeg(?X) .
-% norm funct
-normForFunct(?P) :- funct(?P), normForRole(?P) .
-% inverse funct
-functInv(?P) :- funct(?P), invOf(?P, ?Q), normForRole(?Q) .
+% concept(!notX), negOf(!notX, ?X) :- concept(?X), normForNeg(?X) .\
 
+concept(!notX), negOf(!notX, ?X) :- concept(?X), atomic(?X) .
+concept(!notX), negOf(!notX, ?X) :- concept(?X), domOf(?X, _) .
+concept(!notX), negOf(!notX, ?X) :- concept(?X), rngOf(?X, _) .
+
+% role negation
+% role(!notP), negOf(!notP, ?P) :- role(?P), normForRole(?P) .
+
+role(!notP), negOf(!notP, ?P) :- role(?P), atomic(?P) .
+
+% role inverse
+role(!Q), invOf(!Q, ?P) :- role(?P), atomic(?P) .
+
+% For TBox
+atomicRole(?P) :- role(?P), atomic(?P) .
+atomicConcept(?X) :- concept(?X), atomic(?X) .
 
 
 %% ====================================================================================================
@@ -92,9 +104,11 @@ functInv(?P) :- funct(?P), invOf(?P, ?Q), normForRole(?Q) .
 % rep
 sub(?X, ?Z) :- repOf(?X, ?Y), sub(?Y, ?Z) .
 sub(?Z, ?X) :- repOf(?X, ?Y), sub(?Z, ?Y).
+% SB: use different predicates here, e.g. auxSub and sub, so that the reasoning below is done only over the representatives? (-> less rule applications)
 
 % functional
-funct(?P) :- funct(?Q), sub(?P, ?Q).
+% SB: DL-Lite_A does not allow this, so this role is not necessary
+% funct(?P) :- funct(?Q), sub(?P, ?Q).
 
 % reflexivity
 sub(?X, ?X) :- concept(?X).
@@ -102,15 +116,15 @@ sub(?X, ?X) :- role(?X).
 %
 % negated
 negOf(?X, ?Y) :- negOf(?Y, ?X).
-sub(?Y1, ?X1) :- sub(?X, ?Y), negOf(?X, ?X1), negOf(?Y, ?Y1).
+sub(?Y1, ?X1) :- sub(?X, ?Y), negOf(?X1, ?X), negOf(?Y1, ?Y).
 %
 % transitivity
-sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z).
 sub(?X, ?Z) :- sub(?X, ?Y), sub(?Y, ?Z).
 %
 % role inclusions
 sub(?X1, ?Y1) :- sub(?X, ?Y), domOf(?X1,?X), domOf(?Y1,?Y).
 sub(?X1, ?Y1) :- sub(?X, ?Y), rngOf(?X1,?X), rngOf(?Y1,?Y).
+% SB: I think one of these rules would be enough
 %
 % role inverses
 sub(?X1, ?Y1) :- sub(?X, ?Y), invOf(?X1,?X), invOf(?Y1,?Y).
@@ -122,52 +136,56 @@ invOf(?X, ?Y) :- invOf(?Y, ?X).
 %% ================================= Identifying type of inclusions ===================================
 %% ====================================================================================================
 
-%% Norm defines NORMAL direction due to symmetry (normForNeg for both role and concept)
+%% Norm defines NORMAL direction due to symmetry
+
+%% SB: In your Python implementation, do you even need the first two arguments of the following predicates, or would the last two be enough?
+%% Ans: Yes, the first 2 arguments are needed to for positive inclusions rules; while the last 2 are for negative
+
 
 %% Positive inclusions
 % atomicA in atomicB
-aAInaBSub(?A, ?B, ?A, ?B) :- sub(?A, ?B), atomic(?A), atomic(?B), ?A != ?B.
+aAInaBSub(?A, ?B, ?A, ?B) :- sub(?A, ?B), concept(?A), concept(?B), atomic(?A), atomic(?B), ?A != ?B.
 % existsP in atomicB`
-ePInaBSub(?ExistsP, ?B, ?P, ?B) :- sub(?ExistsP, ?B), domOf(?ExistsP, ?P) , atomic(?B), normForNeg(?ExistsP) .
+ePInaBSub(?ExistsP, ?B, ?P, ?B) :- sub(?ExistsP, ?B), domOf(?ExistsP, ?P), atomic(?B) .
 % existsPMinus in atomic B
-ePMinusInaBSub(?ExistsPMinus, ?B, ?P, ?B) :- sub(?ExistsPMinus, ?B), atomic(?B), rngOf(?ExistsPMinus, ?P), invOf(?P, ?Q), normForNeg(?Q) .
+ePMinusInaBSub(?ExistsPMinus, ?B, ?P, ?B) :- sub(?ExistsPMinus, ?B), atomic(?B), rngOf(?ExistsPMinus, ?P), invOf(?P, ?Q) .
 % r in p
-rInPSub(?R, ?P, ?R, ?P) :- sub(?R, ?P), role(?R), role(?P), normForRole(?R), normForRole(?P), ?R != ?P .
+rInPSub(?R, ?P, ?R, ?P) :- sub(?R, ?P), role(?R), role(?P), atomic(?R), atomic(?P), ?R != ?P .
 % r in PMinus
-rInPMinusSub(?R, ?PMinus, ?R, ?P) :- sub(?R, ?PMinus), role(?R), role(?PMinus), invOf(?PMinus, ?P), normForRole(?R), normForRole(?P) .
+rInPMinusSub(?R, ?PMinus, ?R, ?P) :- sub(?R, ?PMinus), role(?R), role(?PMinus), invOf(?PMinus, ?P), atomic(?R), atomic(?P) .
+%% SB: If you have sub(?R, ?PMinus) and invOf(?PMinus, ?P), I think role(?R) and role(?PMinus) are redundant
 % RMinus in P
-rMinusInPSub(?RMinus, ?P, ?R, ?P) :- sub(?RMinus, ?P), role(?RMinus), role(?P), invOf(?RMinus, ?R), normForRole(?R), normForRole(?P) .
+rMinusInPSub(?RMinus, ?P, ?R, ?P) :- sub(?RMinus, ?P), role(?RMinus), role(?P), invOf(?RMinus, ?R), atomic(?R), atomic(?P) .
 
 
 %% Negative inclusions
 % atomicA in not atomicB
-aAInNotaBSub(?A, ?NotB, ?A, ?B) :- sub(?A, ?NotB), atomic(?A), negOf(?NotB, ?B), atomic(?B) .
+aAInNotaBSub(?A, ?NotB, ?A, ?B) :- sub(?A, ?NotB), atomic(?A), concept(?A), negOf(?NotB, ?B), atomic(?B), concept(?B) .
 % atomicB in not existsP
-aBInNotePSub(?B, ?NotExistsP, ?B, ?P) :- sub(?B, ?NotExistsP), atomic(?B), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), normForRole(?P) .
+aBInNotePSub(?B, ?NotExistsP, ?B, ?P) :- sub(?B, ?NotExistsP), atomic(?B), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), atomic(?P) .
 % existsP in not atomicB
-ePInNotaBSub(?ExistP, ?NotB, ?P, ?B) :- sub(?ExistP, ?NotB), domOf(?ExistP, ?P), negOf(?NotB, ?B), atomic(?B), normForNeg(?ExistP) .
+ePInNotaBSub(?ExistP, ?NotB, ?P, ?B) :- sub(?ExistP, ?NotB), domOf(?ExistP, ?P), negOf(?NotB, ?B), atomic(?B) .
 % atomicB in not existsPMinus
-aBInNotePMinusSub(?A, ?NotExistsPMinus, ?A, ?P) :- sub(?A, ?NotExistsPMinus), atomic(?A), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P), normForNeg(?P) .
+aBInNotePMinusSub(?A, ?NotExistsPMinus, ?A, ?P) :- sub(?A, ?NotExistsPMinus), atomic(?A), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P) .
 % existsPMinus in not atomicB
-ePMinusInNotaBSub(?ExistsPMinus, ?NotB, ?P, ?B) :- sub(?ExistsPMinus, ?NotB), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P), normForNeg(?P), negOf(?NotB, ?B), atomic(?B) .
+ePMinusInNotaBSub(?ExistsPMinus, ?NotB, ?P, ?B) :- sub(?ExistsPMinus, ?NotB), rngOf(?ExistsPMinus, ?Q), invOf(?Q, ?P), negOf(?NotB, ?B), atomic(?B) .
 % r in not p (type 7)
-rInNotPSub(?R, ?NotP, ?R, ?P) :- sub(?R, ?NotP), role(?R), negOf(?NotP, ?P), role(?P), normForRole(?R), normForRole(?P) .
+rInNotPSub(?R, ?NotP, ?R, ?P) :- sub(?R, ?NotP), role(?R), negOf(?NotP, ?P), role(?P), atomic(?R), atomic(?P) .
 % r in not PMinus (type 8)
-rInNotPMinusSub(?R, ?NotPMinus, ?R, ?P) :- sub(?R, ?NotPMinus), role(?R), normForRole(?R), negOf(?NotPMinus, ?PMinus), invOf(?PMinus, ?P), role(?P), normForRole(?P) .
+rInNotPMinusSub(?R, ?NotPMinus, ?R, ?P) :- sub(?R, ?NotPMinus), role(?R), atomic(?R), negOf(?NotPMinus, ?PMinus), invOf(?PMinus, ?P), role(?P), atomic(?P) .
 % domR in not domP (type 9)
-eRInNotePSub(?ExistsR, ?NotExistsP, ?R, ?P) :- sub(?ExistsR, ?NotExistsP), domOf(?ExistsR, ?R), normForRole(?R), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), normForRole(?P) .
+eRInNotePSub(?ExistsR, ?NotExistsP, ?R, ?P) :- sub(?ExistsR, ?NotExistsP), domOf(?ExistsR, ?R), atomic(?R), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), atomic(?P) .
 % domR in not rngP (type 10)
-eRInNotePMinusSub(?ExistsR, ?NotExistsPMinus, ?R, ?P) :- sub(?ExistsR, ?NotExistsPMinus), domOf(?ExistsR, ?R), normForRole(?R), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?PMinus), invOf(?PMinus, ?P), normForRole(?P) .
+eRInNotePMinusSub(?ExistsR, ?NotExistsPMinus, ?R, ?P) :- sub(?ExistsR, ?NotExistsPMinus), domOf(?ExistsR, ?R), atomic(?R), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?PMinus), invOf(?PMinus, ?P), atomic(?P) .
 % rngR in not domP (type 11)
-eRMinusInNotePSub(?ExistsRMinus, ?NotExistsP, ?R, ?P) :- sub(?ExistsRMinus, ?NotExistsP), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), normForRole(?R), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), normForRole(?P) .
+eRMinusInNotePSub(?ExistsRMinus, ?NotExistsP, ?R, ?P) :- sub(?ExistsRMinus, ?NotExistsP), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), atomic(?R), negOf(?NotExistsP, ?ExistsP), domOf(?ExistsP, ?P), atomic(?P) .
 % rngR in not rngP (type 12)
-eRMinusInNotePMinusSub(?ExistsRMinus, ?NotExistsPMinus, ?R, ?P) :- sub(?ExistsRMinus, ?NotExistsPMinus), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), normForRole(?R), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?PMinus), invOf(?PMinus, ?P), normForRole(?P) .
+eRMinusInNotePMinusSub(?ExistsRMinus, ?NotExistsPMinus, ?R, ?P) :- sub(?ExistsRMinus, ?NotExistsPMinus), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), atomic(?R), negOf(?NotExistsPMinus, ?ExistsPMinus), rngOf(?ExistsPMinus, ?PMinus), invOf(?PMinus, ?P), atomic(?P) .
 % domR in not atomic A (type 13)
-eRInNotaASub(?ExistsR, ?NotA, ?R, ?A) :- sub(?ExistsR, ?NotA), domOf(?ExistsR, ?R), normForRole(?R), negOf(?NotA, ?A), atomic(?A) .
+eRInNotaASub(?ExistsR, ?NotA, ?R, ?A) :- sub(?ExistsR, ?NotA), domOf(?ExistsR, ?R), atomic(?R), negOf(?NotA, ?A), atomic(?A) .
 % rngR in not atomic A (type 14)
-eRMinusInNotaASub(?ExistsRMinus, ?NotA, ?R, ?A) :- sub(?ExistsRMinus, ?NotA), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), normForRole(?R), negOf(?NotA, ?A), atomic(?A) .
+eRMinusInNotaASub(?ExistsRMinus, ?NotA, ?R, ?A) :- sub(?ExistsRMinus, ?NotA), rngOf(?ExistsRMinus, ?RMinus), invOf(?RMinus, ?R), atomic(?R), negOf(?NotA, ?A), atomic(?A) .
 
 
 % export to standard output
 % @export sub :- turtle{resource=""} .
-
