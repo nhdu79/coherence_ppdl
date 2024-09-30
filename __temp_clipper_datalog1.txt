@@ -1,8 +1,10 @@
-nothing(X) :- bomb(X), cat(X).
-objectx(X) :- cat(X).
 objectx(X) :- bomb(X).
+objectx(X) :- cat(X).
+nothing(X) :- bomb(X), cat(X).
 package(Y) :- contains(Y,X).
 objectx(Y) :- contains(X,Y).
  :- contains(X,Z), Y !=Z, contains(X,Y).
 thing(Y) :- contains(X,Y), package(X).
 objectx(Y) :- contains(X,Y), package(X).
+% rewritten queries:
+QUERY0(X0,X1) :- contains(X0,X1), bomb(X1).

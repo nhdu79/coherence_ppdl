@@ -3,13 +3,16 @@
 * Problem 1:
     - There's a slight mismatch between the (elementary) rules described in the papers (for case positive + negative) and my implementation of cl(T).
     - In details, for the positive inclusion cases (Paper 1: Explanation in the DL-Lite of DLs), they only define the rules for positive inclusions, i.e.\ no negations for reflexivity.
+        - Ans: Ignore !!!
     - Afterwards, we checked this and compare with the other paper for the negative inclusions (Paper 2: Tractable Reasoning and Efﬁcient Query Answering in Description Logics: The DL-Lite Family) and came up with a solution of adding 1 more rule: "X \sqsubseteq \lnot Y => Y \sqsubseteq \lnot X".
     => This would only work IF X and Y are allowed to be negated in that rule AND the transitivity rule; which is the case in the implementation; NOT in paper.
-    => How to move forward ???
+    => NOT LOGICALLY EQUIVALENT !!!
 
 * Problem 2: Implicit inequality in paper ???? => Added the following in the inclusion identifcation:
     - aAinaBSub: A != B
     - rInPSub: R != P
+        - Merge! In paper!
+        - Mention in thesis! In implementaiton or sth
 
 * Questions:
     - In horn-pddl, how do I pass a list of datalog rules to the compiler?
@@ -41,7 +44,6 @@
     - Boarded ⊑ Passenger
     - Served ⊑ Passenger
     - LiftAt ⊑ Floor
-
 * cl(T): contains T and:
     - funct(next)
     - rng(next) ⊑ rng(next)

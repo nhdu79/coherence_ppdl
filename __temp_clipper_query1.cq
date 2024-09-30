@@ -1,0 +1,1 @@
+QUERY0(?0,?1) <- bomb(?1), contains(?0,?1)
